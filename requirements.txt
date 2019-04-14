@@ -1,0 +1,12 @@
+gevent
+gunicorn
+markdown2
+pymysql
+django==2.1
+djangorestframework
+markdown 
+django-filter
+monthdelta
+Pillow
+xlrd
+xlsxwriter
