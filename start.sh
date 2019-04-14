@@ -37,7 +37,7 @@ function rebuild_db {
 
 function launch_webapp {
     cd ${BASE_DIR}/mysite
-    python "manage.py" "runserver"
+    python "manage.py" "runserver" "9000"
 }
 
 #############

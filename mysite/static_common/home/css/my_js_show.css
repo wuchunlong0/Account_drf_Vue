@@ -1,0 +1,11 @@
+/* Modifier: `my-alert-danger` wuchunlong 2018-10-17
+ ========================================================================== */
+.my-alert-danger {
+  background: #fff1f0;
+  color: #d85030;
+}
+/* Remove from the flow and screen readers on any device */
+.my-hidden {
+  display: none !important;
+  visibility: hidden !important;
+}

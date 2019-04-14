@@ -35,4 +35,5 @@ def djangoPage(contact_list,page,num):
         pageList[page+2:-1] = ['...']
     if page > 1+3:
         pageList[1:page-3] = ['...']        
+    #print('paginator.num_pages=',paginator.num_pages)
     return model_list,pageList,paginator.num_pages,page

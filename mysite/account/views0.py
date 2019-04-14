@@ -20,10 +20,23 @@ from myAPI.pageAPI import djangoPage,PAGE_NUM,toInt
 from myAPI.fileAPI import ListToXlsx
 from myAPI.searchAPI import SearchNameContact
 
-
 def _getOperators():
     operators = Group.objects.get(name='Operator').user_set.all()
-    return [user  for user in User.objects.all() if user.is_superuser or user in operators]
+    return [user for user in User.objects.all() if user.is_superuser or user in operators]
+
+@login_required
+def customer(request, page): 
+    operators = _getOperators()
+    
+    if request.user not in operators:
+        return HttpResponseRedirect('/')
+         
+    cleanData = request.GET.dict()     
+    companys = SearchNameContact(Company, cleanData.get('name',''),cleanData.get('contact',''))
+    companys = companys.order_by('-id')
+    company_list, pageList, num_pages, page = djangoPage(companys,page,PAGE_NUM)  #调用分页函数
+    offset = PAGE_NUM * (page - 1)
+    return render(request, 'account/customer.html', context=locals())
 
 def _Order(cleanData):
     orders = Order.objects
@@ -91,15 +104,33 @@ def _filterOrder(request, cleanData):
         orders = orders.filter(date__range=[startDate, endDate])
     return orders, monthNum
 
+# http://localhost:8000/account/billing/
+@login_required
+def billing(request, page):
+    operators = _getOperators()     
+    cleanData = request.GET.dict()
+    queryString = '?'+'&'.join(['%s=%s' % (k,v) for k,v in cleanData.items()])
+    orders, monthNum = _filterOrder(request, cleanData)
+      
+    TotalTax = sum(orders.values_list('priceIncludeTax', flat=True))
+    orders = orders.order_by('-date', '-id')    
+    if request.user in operators: #如果登录用户在Operator组
+        company_name_list = Company.objects.values_list('name', flat=True) 
+        type_list = [i[0] for i in Order.ORDER_TYPE]
+        material_name_list = Material.objects.values_list('name', flat=True)
+        taxPercent_list = [i[0] for i in Order.ORDER_TAX]   
+    order_list, pageList, num_pages, page = djangoPage(orders,page,PAGE_NUM)  #调用分页函数
+    offset = PAGE_NUM * (page - 1)
+    return render(request, 'account/billing.html', context=locals())
 
 @login_required
-def addBilling_vue(request,page):
+def addBilling(request):
     operators = _getOperators()
 
     if request.user not in operators or request.method != 'POST':
-        return HttpResponseRedirect('/')    
+        return HttpResponseRedirect('/')
+    
     cleanData = request.POST.dict()
-
     company = Company.objects.get(name=cleanData['company'])
     type = cleanData.get('type', '')
     if type not in [i[0] for i in Order.ORDER_TYPE]:
@@ -147,10 +178,10 @@ def addBilling_vue(request,page):
     o._autoFill()
     o.save()
       
-    return HttpResponseRedirect('/account/billing_vue/')
+    return HttpResponseRedirect('/account/billing/')
 
 @login_required
-def addCustomer_vue(request):
+def addCustomer(request):
     operators = _getOperators()
     
     if request.user not in operators or request.method != 'POST':
@@ -176,8 +207,9 @@ def addCustomer_vue(request):
     c.contact = cleanData['contact']
     c.telephone = cleanData['telephone']
     c.username = user
-    c.save()    
-    return HttpResponseRedirect('/account/customer_vue/')
+    c.save()
+    
+    return HttpResponseRedirect('/account/customer/')
 
 def ModelToList(order_list):
     try: 
@@ -223,23 +255,8 @@ def makexlsx(request):
     if convertxlsx(order_list, tempFilePath):           
         return downLoadFile(tempFilePath,downFilePath)
        
-    return HttpResponseRedirect(r'/account/billing_vue/')
+    return HttpResponseRedirect(r'/account/billing/')
 
-# http://localhost:8000/account/test/
-def test(request):
-    return HttpResponse('ok')
 
-# http://localhost:8000/account/billing_vue/
-@login_required
-def billing_vue(request,page):
-    cleanData = request.GET.dict()
-    queryString = '?'+'&'.join(['%s=%s' % (k,v) for k,v in cleanData.items()])
-    return render(request, 'account/billing_vue.html', context=locals())
 
-# http://localhost:8000/account/customer_vue/
-@login_required   
-def customer_vue(request, page):
-    cleanData = request.GET.dict()
-    queryString = '?'+'&'.join(['%s=%s' % (k,v) for k,v in cleanData.items()])
-    return render(request, 'account/customer_vue.html', context=locals())
-    
+   

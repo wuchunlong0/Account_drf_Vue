@@ -1,0 +1,18 @@
+<!-- <link href="/static/home/css/btn.css" rel="stylesheet"> -->
+<span v-if="num_pages > 1 ">
+
+<span v-for="i in pageList">
+                      
+    <span v-if=" i == '...' ">
+         {[i]}&nbsp;
+    </span>
+    <span v-else>                          
+        <span v-if=" i == page ">                               
+            <a v-bind:href="i+queryString"  class="btn btn-lg btn-primary">  {[i]} </a>&nbsp;
+        </span>
+        <span v-else>                                             
+            <a v-bind:href="i+queryString" class="btn btn-lg btn-default"> {[i]} </a>&nbsp;
+        </span>
+    </span>                                 
+</span>
+</span>

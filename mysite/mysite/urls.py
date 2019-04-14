@@ -24,5 +24,7 @@ urlpatterns = [
     url(r'^(?P<path>assets(/.*))$', RedirectView.as_view(url='/static/%(path)s', query_string=True)),
     url(r'^admin/', admin.site.urls),
     url(r'^account/', include('account.urls')),
-    url(r'^$', RedirectView.as_view(url='/account/billing/', query_string=True)),
+    url(r'^$', RedirectView.as_view(url='/account/billing_vue/', query_string=True)),
+    
+    url(r'^api/', include('account.api.urls')),
 ]
