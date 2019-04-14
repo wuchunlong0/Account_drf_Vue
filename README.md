@@ -1,23 +1,28 @@
-account_drf_vue_py354_dj21    2018.11.18 <br>
-1、外键使用 drf方式  <br>
-2、mybtn.css 分页按钮通用,此模块不会与模块其他发生冲突!<br>
-3、改变模板 时间显示：<br> 
-<td><span> {[ i.date.substring(0,10)+' '+i.date.substring(11,19)]} </span></td><br>
-效果：2018-11-17 11:09:38<br>
+Python3.54  Django2.1<br>
+account_py3_dj21<br><br>
+外键使用， 不用特别处理，模板就能渲染。<br>
 
-./start.sh -i<br>
-admin/1234qazx     op0/1234qazx  cx0/1234qazx<br>
 
-管理 http://localhost:8000/admin/<br>
-主页 http://localhost:8000/<br>
+一、功能：<br>
+高域传媒<br>
 
-分页 http://localhost:8000/account/materials<br>
-不分页 http://localhost:8000/account/materials/apiall<br>
+二、相关技术<br>
+（一）时间格式<br>
 
-有分页 http://localhost:8000/account/companys<br>
-不分页 http://localhost:8000/account/companys/apiall<br>
+1、设置环境（中国时区）：settings.py<br>
+LANGUAGE_CODE = 'zh-Hans'<br>
+TIME_ZONE = 'Asia/Shanghai'<br>
 
-自定义分页 http://127.0.0.1:8000/account/orderlist/<br>
-自定义分页 http://127.0.0.1:8000/account/customerlist/<br>
+2、models.py<br>
+date = models.DateTimeField(default=datetime.datetime.now, null=True, blank=True)<br>
 
-特殊要求的API http://localhost:8000/account/api/<br>
+3、views.py<br>
+o = Order()<br>
+o.date = datetime.datetime.now()-datetime.timedelta(days=random.randint(1, 500))<br>
+o.save()<br>
+
+4、前端 html输出格式：<br>
+{{ i.date }} 2018年11月15日 10:26<br>
+{{ i.date | date:"Y-m-d H:i:s" }}   2018-11-15 10:26:44<br>
+
+

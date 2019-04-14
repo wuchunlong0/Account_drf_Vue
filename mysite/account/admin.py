@@ -5,6 +5,7 @@ from django.contrib import admin
 
 from .models import Company, Material, Order
 
+
 class MaterialAdmin(admin.ModelAdmin):
     list_display = ('name', 'price')
 
