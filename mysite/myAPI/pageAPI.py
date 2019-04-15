@@ -28,11 +28,37 @@ def djangoPage(contact_list,page,num):
     except PageNotAnInteger:
         model_list = paginator.page(1)
     except EmptyPage:
-        model_list = paginator.page(paginator.num_pages)
-         
+        model_list = paginator.page(paginator.num_pages)         
     pageList = list(paginator.page_range)
     if page < (paginator.num_pages)-3:
         pageList[page+2:-1] = ['...']
     if page > 1+3:
         pageList[1:page-3] = ['...']        
+    
     return model_list,pageList,paginator.num_pages,page
+
+from rest_framework.pagination import PageNumberPagination #分页
+from rest_framework.response import Response
+class MyFormatResultsSetPagination(PageNumberPagination): 
+    page_size_query_param = "page_size"
+    page_query_param = 'page'
+    page_size = PAGE_NUM
+    max_page_size = 10000
+        
+    """
+    自定义分页方法 依赖 settings.py设置 'ReturnList' object has no attribute 'GET'
+    """ 
+    def get_paginated_response(self,data):
+        page = self.page.start_index() // self.page.paginator.per_page + 1
+        count = self.page.paginator.count #总数
+        page_size = self.page.paginator.per_page #每页数
+        data_list, pageList, num_pages, page = djangoPage(range(count),page,PAGE_NUM)  #调用分页函数
+        """
+        设置返回内容格式
+        """
+        return Response({'results': data, 
+                        'pagination': count, 
+                        'page_size': page_size, 
+                        'page': page,
+                        'num_pages' : num_pages,
+                        'pageList':pageList})

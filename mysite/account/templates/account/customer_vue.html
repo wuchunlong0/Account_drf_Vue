@@ -1,70 +1,47 @@
 {% extends "account/layout.html" %}
-
-{% block nav %}
-          <ul class="nav navbar-nav">
-            <li><a href="/account/billing_vue">报价单</a></li>
-            <li v-for="u in operators" v-if= "u == username">
-               <a href="/account/customer_vue">客户信息</a>
-            </li>
-            <li><a href="/admin">管理</a></li>
-            <li><a href="/logout">退出</a></li>
-          </ul>
-{% endblock %}
-
 {% block content %}
 
-<script src="https://cdn.staticfile.org/jquery/1.10.2/jquery.min.js"> </script> 
-<script src="https://cdn.bootcss.com/vue/2.2.2/vue.min.js"></script> 
-<script src="/static/home/js/abbyApp.js"></script> 
 <script>
-function initVM(data) {
-    $('#div-customer').show();
+function initVM(data,companys) {
+    //alert('ok1');   
     var vm = new Vue({
-        el: '#div-customer',     
+        el: '#div-Vues',     
         delimiters: ['{[', ']}'],
         data: {
-            company_list: data.company_list,
+            company_list: data.results,
             pageList : data.pageList,
-            num_pages: data.num_pages,
-            page: data.page, 
-            offset: data.offset,
-            operators:data.operators,
-            cleanData:data.cleanData,
-            queryString:data.queryString
-            
+            num_pages : data.num_pages,
+            page : data.page, 
+            PAGE_NUM : companys.PAGE_NUM,                      
+            operators:companys.operators,           
+            cleanData:companys.cleanData,
+            queryString: companys.queryString,
+            username:companys.username,           
 
-        },
-        // methods: {
-        //     edit_blog: function (blog) {
-        //         location.assign('/blog_vue/edit/' + blog.id);
-        //     },
-        //     delete_blog: function (blog) {
-        //         showConfirm('Confirm Delete', 'Confirm delete id ="' + blog.id + '"? Could not recovery.', function () {
-        //             location.assign('/blog_vue/delete/' + blog.id);
-        //         });
-        //     }
-            
-        // }
+        }
 
     });
+    $('#div-Vues').show();
 }
 
-$(function () {   
-    getApi("/api/customer/{{page}}{{queryString}}", function (err, data) {//加载网页就运行
+$(function () {      
+    $('#div-Vues').hide(); // 隐藏所有 id="div-orders" 元素   
+    getApi("/account/customerlist/?{{queryString}}", function (err, data) {
         if (err) {
-            //alert(err);
-            //return showError(err);
-        }
-        //$('#div-orders').hide(); // 隐藏所有 id="div-loading" 元素
-        //alert(data.page);
-        initVM(data);
-           
-    });
-});
+            return showError(err);
+        };
+        
+    getApi("/account/api/?{{queryString}}", function (err, companys) {
+        if (err) {
+            return showError(err);
+        };  
+        
+         initVM(data,companys);    
 
+    });           
+  });
+});   
 </script>
-    
-<div id="div-customer"> 
     <div class="container theme-showcase" role="main"> 
         <div class="jumbotron">
             <h2>添加客户</h2>
@@ -117,7 +94,7 @@ $(function () {
         </div> 
                 
         <p>
-         <span> {% include 'home/djangopage_vue.html' %} </span>  
+         <span> {% include 'home/djangopage_vue_mybtn.html' %} </span>  
         </p>
                 
         <table class="table">
@@ -138,7 +115,7 @@ $(function () {
                
                 <tr v-for="(i,index) in company_list"> 
                 
-                    <td><span v-text="index+1+(page-1)*offset"></span></td>
+                    <td><span v-text="index+1+(page-1)*PAGE_NUM"></span></td>
                     <td>{[ i.name ]}</td>
                     <td>{[ i.taxNumber ]}</td>
                     <td>{[ i.address ]}</td>
@@ -146,13 +123,13 @@ $(function () {
                     <td>{[ i.bankAccount ]}</td>
                     <td>{[ i.contact ]}</td>
                     <td>{[ i.telephone ]}</td>
-                    <td>{[ i.username ]}</td>
+                    <td>{[ i.username_name ]}</td>
                 </tr>
               
             </tbody>
         </table>
         
-        <span> {% include 'home/djangopage_vue.html' %} </span>  
+        <span> {% include 'home/djangopage_vue_mybtn.html' %} </span>  
  
     </div> <!-- /container -->
      

@@ -1,75 +1,75 @@
 {% extends "account/layout.html" %}
-
 {% block content %}
 
-<script src="https://cdn.staticfile.org/jquery/1.10.2/jquery.min.js"> </script> 
-<script src="https://cdn.bootcss.com/vue/2.2.2/vue.min.js"></script> 
-<script src="/static/home/js/abbyApp.js"></script> 
-<link href="/static/home/css/my_js_show.css" rel="stylesheet"> <!--消息框-->
-
 <script>
-
-function initVM(data) {
-    $('#div-orders').show();
+function initVM(results,data,companys,materials) {
+    //alert('ok1');
     var vm = new Vue({
-        el: '#div-orders',     
+        el: '#div-Vues',     
         delimiters: ['{[', ']}'],
         data: {
-            order_list: data.order_list,
-            pageList : data.pageList,
-            num_pages: data.num_pages,
-            page: data.page, 
-            offset: data.offset,
-            company_name_list: data.company_name_list,
-            type_list:data.type_list,
-            material_name_list:data.material_name_list,
-            taxPercent_list:data.taxPercent_list,
+            order_list: results.results,
+            pageList : results.pageList,
+            num_pages : results.num_pages,
+            page : results.page, 
+            PAGE_NUM : data.PAGE_NUM,
+            taxPercent_list:data.taxPercent_list,           
+            type_list:data.type_list,           
             operators:data.operators,
             monthNum:data.monthNum,
             cleanData:data.cleanData,
             queryString: data.queryString,
-            username:data.username
-
-        },
-        // methods: {
-        //     edit_blog: function (blog) {
-        //         location.assign('/blog_vue/edit/' + blog.id);
-        //     },
-        //     delete_blog: function (blog) {
-        //         showConfirm('Confirm Delete', 'Confirm delete id ="' + blog.id + '"? Could not recovery.', function () {
-        //             location.assign('/blog_vue/delete/' + blog.id);
-        //         });
-        //     }
+            TotalTax : data.TotalTax,
+            username:data.username,
+            company_name_list: companys,
+            material_name_list:materials 
             
-        // }
+
+        }
 
     });
+    $('#div-Vues').show();
 }
 
 $(function () {   
-    getApi("/api/billing/{{page}}{{queryString}}", function (err, data) {//加载网页就运行
+    $('#div-Vues').hide(); // 隐藏所有 id="div-orders" 元素   
+    getApi("/account/orderlist/?{{queryString}}", function (err, results) {
         if (err) {
             return showError(err);
-        }
-        $('#div-orders').hide(); // 隐藏所有 id="div-orders" 元素
-        //alert(data.page);
-        initVM(data);
-           
-    });
+        };
+        
+        
+    getApi("/account/api/?{{queryString}}", function (err, data) {
+        if (err) {
+            return showError(err);
+        };
+        
+    //不分页 全部数据
+    getApi("/account/companys/apiall/?format=json", function (err, companys) {
+        if (err) {
+            return showError(err);
+        };
+        
+    //默认只取第一页数据
+    getApi("/account/materials/apiall/?format=json", function (err, materials) {
+        if (err) {
+            return showError(err);
+        };
+        
+         initVM(results,data,companys,materials);  
+     });
+
+    });           
+  });
+});      
+
 });
 
 </script>
-    
-
-
-
-<div id="div-orders"> 
-
-
 
 <div  class="container theme-showcase" role="main" >        
     <div class="jumbotron">
-
+    <template> <!-- 防变量闪烁 -->
         <span v-for="u in operators" v-if= "u == username">
     
             <h2>添加报价单</h2>
@@ -84,7 +84,7 @@ $(function () {
                     
                     <option  v-for="(i,index) in company_name_list" >
                         
-                        <template>{[i]}</template> <!-- 防变量闪烁 -->
+                        <template>{[i.name]}</template> <!-- 防变量闪烁 -->
                         
                     </option>
                     
@@ -107,7 +107,7 @@ $(function () {
                 <span class="input-group-addon">制作材料</span>
                 <select name="material" class="form-control" >
                     <option v-for="(i,index) in material_name_list">
-                        <template>{[i]}</template>
+                        <template>{[i.name]}</template>
                     </option>
                 </select>
             </div>
@@ -140,18 +140,21 @@ $(function () {
             </form>
      
            </span>  
-            
+        </template>            
 
             <h2>报价单查询</h2>
-            <form method="get" action="{% url 'billing_vue' %}">
+            <!-- <form method="get" action=" url 'billing_vue' "> -->
+            <form method="get" action="/account/billing_vue/">
+            <template> <!-- 防变量闪烁 -->
             <div v-for="u in operators" v-if= "u == username">   
             <div class="input-group">
                 <span class="input-group-addon">公司名称</span>
                 <input type="text" class="form-control" placeholder="公司名称" name="company" value="" autofocus />
                 
             </div>
+            
 
-           <div class="input-group">
+            <div class="input-group">
                 <span class="input-group-addon">登记人员</span>
                 <select name="author" class="form-control" >
                     <option value="">-</option>                  
@@ -163,8 +166,10 @@ $(function () {
                     
                 </select>
             </div>
-            </div>  
+            
 
+            </div>  
+            </template> 
             <div class="input-group">
                 <span class="input-group-addon">内容包含</span>
                 <input type="text" class="form-control" placeholder="内容" value="" name="content" />
@@ -195,11 +200,11 @@ $(function () {
             <span v-else-if="monthNum < 0 "> 所有 </span>
             <span v-else> 前 <span v-text="monthNum"></span> 个月 </span>
         </span>
-        <span> : </span> <span> {% include 'home/djangopage_vue.html' %} </span>   
+        <span> : </span> <span> {% include 'home/djangopage_vue_mybtn.html' %} </span>   
     
         <form method="post" action="{% url 'makexlsx' %}">
         {% csrf_token %}
-            <span class="btn btn-lg btn-primary"> 含税总价: {{ TotalTax }} </span>
+            <span class="btn btn-lg btn-primary"> 含税总价: {[ TotalTax ]} </span>
             {% for k,v in cleanData.items %}
             <input type="text" class="form-control" value="{{ v }}" name="{{ k }}" style="display:none"/>
             {% endfor %}
@@ -230,16 +235,17 @@ $(function () {
             </thead>
             <tbody>
                 
-
+            <template> <!-- 防变量闪烁 -->
                 <tr v-for="(i,index) in order_list"> 
 
-                    <td><span v-text="index+1+(page-1)*offset"></span></td>
+                    <td><span v-text="index+1+(page-1)*PAGE_NUM"></span></td>
                     <td><span v-text="i.id"></span></td>
-                    <td><span v-text="i.author "></span></td>
-                    <!-- <td><span v-text="i.date "></span></td> -->
-                    <td><span> {[ i.date.substring(0,10)+' '+i.date.substring(11,19)]} </span></td>
+                    <td><span v-text="i.author_name "></span></td>
+
+                     <td><span> {[ i.date.substring(0,10)+' '+i.date.substring(11,19)]} </span></td>
+                   
                     
-                    <td><span v-text="i.company"></span></td>
+                    <td><span v-text="i.company_name"></span></td>
 
                     <td>                   
                     <span v-if=" i.type != 'Manufacture' ">                    
@@ -253,7 +259,7 @@ $(function () {
                     <td>
                     
                     <span v-if=" i.type == 'Manufacture' "> 
-                        <span v-text="i.material"></span>(<span v-text="i.priceMaterial"></span> * <span v-text="i.sizeHeight"></span> * <span v-text="i.sizeWidth"></span>)
+                        <span v-text="i.material_name"></span>(<span v-text="i.priceMaterial"></span> * <span v-text="i.sizeHeight"></span> * <span v-text="i.sizeWidth"></span>)
 
                     </span>
                     <span v-else> 
@@ -275,18 +281,18 @@ $(function () {
                     </span>
                     </td>
                 </tr>
-            
+     </template>       
             
 </tbody>
 </table> 
 
 
             
-     
-      <span> {% include 'home/djangopage_vue.html' %} </span>   
-
+    <template> <!-- 防变量闪烁 -->
+      <span> {% include 'home/djangopage_vue_mybtn.html' %} </span>   
+   </template> <!-- 防变量闪烁 -->
 
 </div> <!-- /container -->
 
-</div>
+
 {% endblock %}

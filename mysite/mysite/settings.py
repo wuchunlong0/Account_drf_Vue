@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'rest_framework',
     'account.apps.AccountConfig',
 ]
 
@@ -139,3 +140,8 @@ STATICFILES_DIRS = (
 LOGIN_URL = '/login/'
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/'
+
+REST_FRAMEWORK = {   #  REST_FRAMEWORK 分页
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 25 #每页显示数
+}
