@@ -15,7 +15,6 @@
 //         alert.addClass('uk-hidden').hide().text('');
 //     }
 // }
-
 function showError(err) {
     var alert = $('div.my-alert-danger');
     if (err) {
